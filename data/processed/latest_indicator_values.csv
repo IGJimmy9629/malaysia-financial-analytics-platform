@@ -1,0 +1,9 @@
+country_name,country_code,indicator_name,indicator_code,year,value
+Malaysia,MYS,Bank nonperforming loans to total gross loans (%),FB.AST.NPER.ZS,2023,1.653155801
+Malaysia,MYS,Broad money growth (annual %),FM.LBL.BMNY.ZG,2024,3.276225398
+Malaysia,MYS,Deposit interest rate (%),FR.INR.DPST,2024,2.647115459
+Malaysia,MYS,Domestic credit to private sector by banks (% of GDP),FD.AST.PRVT.GD.ZS,2024,116.0838217
+Malaysia,MYS,GDP growth (annual %),NY.GDP.MKTP.KD.ZG,2024,5.10545921
+Malaysia,MYS,"Inflation, consumer prices (annual %)",FP.CPI.TOTL.ZG,2024,1.834100204
+Malaysia,MYS,Lending interest rate (%),FR.INR.LEND,2024,5.282681
+Malaysia,MYS,"Unemployment, total (% of total labor force) (modeled ILO estimate)",SL.UEM.TOTL.ZS,2024,3.846
