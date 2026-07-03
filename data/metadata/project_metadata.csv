@@ -1,0 +1,11 @@
+Parameter,Value
+Project Name,Malaysia Financial Performance Analytics Platform
+Country,Malaysia
+Data Source,World Bank Open Data
+Study Period,2000-2024
+Number of Indicators,10
+Number of Themes,3
+Dashboard Platform,R Shiny
+Visualisation Platform,R / ggplot2 / plotly
+Analytical Dataset,analysis_dataset_dashboard.csv
+Project Focus,Citizen-centred financial well-being and financial system support

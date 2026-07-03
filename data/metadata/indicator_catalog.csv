@@ -1,0 +1,11 @@
+Indicator_Code,Indicator,Short_Name,Theme,Available
+NY.GDP.MKTP.KD.ZG,GDP growth (annual %),GDP Growth,Economic Well-being,True
+FP.CPI.TOTL.ZG,"Inflation, consumer prices (annual %)",Inflation,Economic Well-being,True
+SL.UEM.TOTL.ZS,"Unemployment, total (% of total labor force) (modeled ILO estimate)",Unemployment,Economic Well-being,True
+NY.ADJ.NNTY.PC.KD,Adjusted net national income per capita (constant 2015 US$),Income per Capita,Economic Well-being,True
+NE.CON.PRVT.PC.KD,Households and NPISHs Final consumption expenditure per capita (constant 2015 US$),Household Consumption,Household Financial Behaviour,True
+NY.GDS.TOTL.ZS,Gross domestic savings (% of GDP),Gross Domestic Savings,Household Financial Behaviour,True
+FR.INR.LEND,Lending interest rate (%),Lending Rate,Financial System Support,True
+FR.INR.DPST,Deposit interest rate (%),Deposit Rate,Financial System Support,True
+FD.AST.PRVT.GD.ZS,Domestic credit to private sector by banks (% of GDP),Domestic Credit,Financial System Support,True
+FB.AST.NPER.ZS,Bank nonperforming loans to total gross loans (%),Non-performing Loans,Financial System Support,True
