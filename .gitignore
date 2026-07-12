@@ -8,3 +8,6 @@ Thumbs.db
 
 # Interactive visualisations are kept locally but excluded from GitHub
 visuals/interactive/
+
+# Large editable presentation file
+documentation/*.pptx

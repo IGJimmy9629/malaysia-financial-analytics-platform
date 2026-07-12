@@ -131,18 +131,19 @@ dir.create("visuals/archive_2018_2024", recursive = TRUE, showWarnings = FALSE)
 print("Visual output folders ready.")
 
 # ============================================================
-# 7. GDP Growth Journey Animation
+# 7. Malaysia's Economic Journey Animation
 # ============================================================
 
 # Business Question:
-# How has Malaysia's GDP growth evolved over time from 2000 to 2024?
+# What does Malaysia's economic journey reveal over the past twenty-five years?
 
 # Analytical Purpose:
-# To provide an animated overview of Malaysia's long-term economic performance
-# before examining major economic events in greater detail.
+# To provide an animated overview of Malaysia's economic journey
+# using GDP growth as the opening indicator before examining
+# household, financial and banking indicators in greater detail.
 
 # Output:
-# Frame 02 – Malaysia GDP Growth Journey (Animation)
+# Frame 02 – Malaysia's Economic Journey Animation
 
 library(gganimate)
 library(gifski)
@@ -156,35 +157,69 @@ gdp_animation_df <- dashboard_df %>%
       TRUE ~ "Normal Growth"
     ),
     Event_Label = case_when(
-      Year == 2001 ~ "Early 2000s slowdown",
+      Year == 2001 ~ "Early 2000s adjustment",
       Year == 2009 ~ "Global Financial Crisis",
       Year == 2020 ~ "COVID-19 contraction",
-      Year == 2022 ~ "Strong rebound",
-      TRUE ~ "Long-term GDP movement"
+      Year == 2022 ~ "Strong post-pandemic rebound",
+      TRUE ~ "Long-term economic movement"
     )
   )
 
 p_gdp_animation <- ggplot(gdp_animation_df, aes(x = Year, y = Value)) +
-  annotate("rect", xmin = 2008, xmax = 2009, ymin = -8, ymax = 11,
-           fill = "#FDECEC", alpha = 0.35) +
-  annotate("rect", xmin = 2020, xmax = 2021, ymin = -8, ymax = 11,
-           fill = "#FDECEC", alpha = 0.35) +
-  geom_hline(yintercept = 0, colour = "grey50", linewidth = 0.6) +
-  geom_line(colour = main_colour, linewidth = 1.35) +
-  geom_point(aes(colour = Point_Type), size = 3.2) +
+  
+  # Highlight major downturn periods
+  annotate(
+    "rect",
+    xmin = 2008,
+    xmax = 2009,
+    ymin = -8,
+    ymax = 11,
+    fill = "#FDECEC",
+    alpha = 0.35
+  ) +
+  annotate(
+    "rect",
+    xmin = 2020,
+    xmax = 2021,
+    ymin = -8,
+    ymax = 11,
+    fill = "#FDECEC",
+    alpha = 0.35
+  ) +
+  
+  # Zero reference line
+  geom_hline(
+    yintercept = 0,
+    colour = "grey50",
+    linewidth = 0.6
+  ) +
+  
+  # Animated trend
+  geom_line(
+    colour = main_colour,
+    linewidth = 1.35
+  ) +
+  geom_point(
+    aes(colour = Point_Type),
+    size = 3.2
+  ) +
+  
+  # Moving focus point
   geom_point(
     aes(group = seq_along(Year)),
     colour = highlight_colour,
     size = 5
   ) +
+  
+  # Dynamic annotation box
   geom_label(
     aes(
       x = 2003,
       y = 9.5,
       label = paste0(
-        "Current year: ", Year,
-        "\nGDP growth: ", sprintf("%.2f%%", Value),
-        "\nFocus: ", Event_Label
+        "Current Year: ", Year,
+        "\nGDP Growth: ", sprintf("%.2f%%", Value),
+        "\nContext: ", Event_Label
       )
     ),
     inherit.aes = FALSE,
@@ -196,6 +231,7 @@ p_gdp_animation <- ggplot(gdp_animation_df, aes(x = Year, y = Value)) +
     label.r = unit(0.15, "lines"),
     linewidth = 0.25
   ) +
+  
   scale_colour_manual(
     values = c(
       "Normal Growth" = main_colour,
@@ -203,19 +239,34 @@ p_gdp_animation <- ggplot(gdp_animation_df, aes(x = Year, y = Value)) +
       "Recovery" = "#1F77B4"
     )
   ) +
-  scale_x_continuous(breaks = seq(2000, 2024, by = 4)) +
-  scale_y_continuous(limits = c(-8, 11), breaks = seq(-8, 10, by = 2)) +
+  
+  scale_x_continuous(
+    breaks = seq(2000, 2024, by = 4)
+  ) +
+  scale_y_continuous(
+    limits = c(-8, 11),
+    breaks = seq(-8, 10, by = 2),
+    labels = function(x) paste0(x, "%")
+  ) +
+  
   labs(
-    title = "Malaysia GDP Growth Journey",
-    subtitle = "Tracking Malaysia's economic performance over time (2000–2024)",
+    title = "Malaysia's Economic Journey",
+    subtitle = "Animated overview of Malaysia's economic journey, 2000–2024",
     x = "Year",
     y = "GDP Growth (%)",
-    caption = "Source: World Bank Open Data"
+    caption = "Source: World Bank Open Data | Note: GDP growth is used as the opening indicator of Malaysia's broader economic journey."
   ) +
+  
   theme_corporate() +
-  theme(legend.position = "none") +
+  theme(
+    legend.position = "none"
+  ) +
+  
   transition_reveal(Year) +
-  shadow_mark(alpha = 0.25, size = 1.2) +
+  shadow_mark(
+    alpha = 0.25,
+    size = 1.2
+  ) +
   ease_aes("linear")
 
 animate(
@@ -224,7 +275,9 @@ animate(
   fps = 12,
   width = 1000,
   height = 600,
-  renderer = gifski_renderer("visuals/animation/frame_02_gdp_growth_journey_2000_2024.gif")
+  renderer = gifski_renderer(
+    "visuals/animation/frame_02_malaysia_economic_journey_2000_2024.gif"
+  )
 )
 
 # ============================================================
@@ -783,70 +836,17 @@ saving_df <- dashboard_df %>%
   arrange(Year)
 
 # ------------------------------------------------------------
-# 12.2 Helper Function for Important Points
+# 12.2 Prepare Start and Latest Points Only
 # ------------------------------------------------------------
 
-get_key_points <- function(data) {
-  
-  start_point <- data %>%
+consumption_key <- bind_rows(
+  consumption_df %>%
     filter(Year == min(Year)) %>%
-    mutate(Point_Type = "Start")
-  
-  end_point <- data %>%
+    mutate(Point_Type = "Initial"),
+  consumption_df %>%
     filter(Year == max(Year)) %>%
     mutate(Point_Type = "Latest")
-  
-  lowest_point <- data %>%
-    filter(Value == min(Value)) %>%
-    slice(1) %>%
-    mutate(Point_Type = "Lowest")
-  
-  highest_point <- data %>%
-    filter(Value == max(Value)) %>%
-    slice(1) %>%
-    mutate(Point_Type = "Highest")
-  
-  crisis_points <- data %>%
-    filter(Year %in% c(2008, 2009, 2020, 2021)) %>%
-    mutate(Point_Type = case_when(
-      Year %in% c(2008, 2009) ~ "Global Financial Crisis",
-      Year == 2020 ~ "COVID-19 Shock",
-      Year == 2021 ~ "Recovery"
-    ))
-  
-  bind_rows(
-    start_point,
-    end_point,
-    lowest_point,
-    highest_point,
-    crisis_points
-  ) %>%
-    distinct(Year, .keep_all = TRUE) %>%
-    arrange(Year)
-}
-
-consumption_key <- get_key_points(consumption_df)
-saving_key <- get_key_points(saving_df)
-
-# ------------------------------------------------------------
-# 12.3 Calculate Overall Change
-# ------------------------------------------------------------
-
-consumption_change <- (
-  (last(consumption_df$Value) - first(consumption_df$Value)) /
-    first(consumption_df$Value)
-) * 100
-
-saving_change <- (
-  (last(saving_df$Value) - first(saving_df$Value)) /
-    first(saving_df$Value)
-) * 100
-
-# ------------------------------------------------------------
-# 12.4 Label Position Adjustments
-# ------------------------------------------------------------
-
-consumption_key <- consumption_key %>%
+) %>%
   mutate(
     Label = paste0(
       Point_Type,
@@ -856,19 +856,25 @@ consumption_key <- consumption_key %>%
       scales::comma(round(Value, 0))
     ),
     Label_X = case_when(
-      Year == min(consumption_df$Year) ~ Year + 1.0,
-      Year == max(consumption_df$Year) ~ Year - 1.5,
+      Point_Type == "Initial" ~ Year + 1.3,
+      Point_Type == "Latest" ~ Year - 1.6,
       TRUE ~ Year
     ),
     Label_Y = case_when(
-      Point_Type %in% c("Lowest", "COVID-19 Shock") ~ Value - 350,
-      Point_Type %in% c("Highest", "Latest") ~ Value + 350,
-      Point_Type == "Recovery" ~ Value + 350,
-      TRUE ~ Value + 300
+      Point_Type == "Initial" ~ Value + 400,
+      Point_Type == "Latest" ~ Value + 400,
+      TRUE ~ Value
     )
   )
 
-saving_key <- saving_key %>%
+saving_key <- bind_rows(
+  saving_df %>%
+    filter(Year == min(Year)) %>%
+    mutate(Point_Type = "Initial"),
+  saving_df %>%
+    filter(Year == max(Year)) %>%
+    mutate(Point_Type = "Latest")
+) %>%
   mutate(
     Label = paste0(
       Point_Type,
@@ -878,27 +884,49 @@ saving_key <- saving_key %>%
       sprintf("%.2f%%", Value)
     ),
     Label_X = case_when(
-      Year == min(saving_df$Year) ~ Year + 1.0,
-      Year == max(saving_df$Year) ~ Year - 1.5,
+      Point_Type == "Initial" ~ Year + 1.3,
+      Point_Type == "Latest" ~ Year - 1.6,
       TRUE ~ Year
     ),
     Label_Y = case_when(
-      Point_Type %in% c("Lowest", "COVID-19 Shock") ~ Value - 3,
-      Point_Type %in% c("Highest", "Recovery", "Latest") ~ Value + 3,
-      TRUE ~ Value + 2.5
+      Point_Type == "Initial" ~ Value + 3.0,
+      Point_Type == "Latest" ~ Value + 3.0,
+      TRUE ~ Value
     )
   )
 
 # ------------------------------------------------------------
-# 12.5 Household Consumption Chart
+# 12.3 Calculate Overall Changes
+# ------------------------------------------------------------
+
+consumption_change <- (
+  (last(consumption_df$Value) - first(consumption_df$Value)) /
+    first(consumption_df$Value)
+) * 100
+
+# Savings is already % of GDP, so show difference as percentage value
+saving_change <- last(saving_df$Value) - first(saving_df$Value)
+
+comparison_text <- paste0(
+  "Consumption: ",
+  ifelse(consumption_change >= 0, "+", ""),
+  sprintf("%.1f%%", consumption_change),
+  "   |   Savings: ",
+  ifelse(saving_change >= 0, "+", ""),
+  sprintf("%.2f%%", saving_change)
+)
+
+# ------------------------------------------------------------
+# 12.4 Household Consumption Chart
 # ------------------------------------------------------------
 
 p_consumption <- ggplot(consumption_df, aes(x = Year, y = Value)) +
-  geom_line(colour = main_colour, linewidth = 1.3) +
+  geom_line(colour = main_colour, linewidth = 1.35) +
   geom_point(colour = main_colour, size = 2.5) +
   geom_point(
     data = consumption_key,
-    aes(colour = Point_Type),
+    aes(x = Year, y = Value),
+    colour = highlight_colour,
     size = 3.8
   ) +
   geom_segment(
@@ -916,40 +944,36 @@ p_consumption <- ggplot(consumption_df, aes(x = Year, y = Value)) +
   ) +
   geom_label(
     data = consumption_key,
-    aes(
-      x = Label_X,
-      y = Label_Y,
-      label = Label
-    ),
+    aes(x = Label_X, y = Label_Y, label = Label),
     inherit.aes = FALSE,
     fill = "white",
     colour = main_colour,
-    size = 2.8,
+    size = 3.0,
     fontface = "bold",
     label.padding = unit(0.22, "lines"),
     label.r = unit(0.12, "lines"),
     linewidth = 0.25
   ) +
-  scale_colour_manual(
-    values = c(
-      "Start" = main_colour,
-      "Latest" = main_colour,
-      "Lowest" = highlight_colour,
-      "Highest" = "#1F77B4",
-      "Global Financial Crisis" = highlight_colour,
-      "COVID-19 Shock" = highlight_colour,
-      "Recovery" = "#2CA02C"
-    )
+  annotate(
+    "label",
+    x = 2016.5,
+    y = max(consumption_df$Value, na.rm = TRUE) * 0.82,
+    label = paste0(
+      "Overall Change\n",
+      ifelse(consumption_change >= 0, "+", ""),
+      sprintf("%.1f%%", consumption_change)
+    ),
+    fill = "white",
+    colour = main_colour,
+    fontface = "bold",
+    size = 3.1,
+    linewidth = 0.25
   ) +
   scale_x_continuous(breaks = seq(2000, 2024, by = 4)) +
   scale_y_continuous(labels = scales::dollar_format(prefix = "US$", accuracy = 1)) +
   labs(
-    title = "Household Consumption per Capita",
-    subtitle = paste0(
-      "Overall change (2000–2024): ",
-      ifelse(consumption_change >= 0, "+", ""),
-      sprintf("%.1f%%", consumption_change)
-    ),
+    title = "Household Consumption",
+    subtitle = "Household spending per capita, constant 2015 US$",
     x = NULL,
     y = "Constant 2015 US$"
   ) +
@@ -961,20 +985,16 @@ p_consumption <- ggplot(consumption_df, aes(x = Year, y = Value)) +
   )
 
 # ------------------------------------------------------------
-# 12.6 Gross Domestic Savings Chart
+# 12.5 Gross Domestic Savings Chart
 # ------------------------------------------------------------
 
 p_saving <- ggplot(saving_df, aes(x = Year, y = Value)) +
-  geom_ribbon(
-    aes(ymin = min(saving_df$Value) - 3, ymax = Value),
-    fill = "#C8E6C9",
-    alpha = 0.65
-  ) +
-  geom_line(colour = "#2E7D32", linewidth = 1.3) +
+  geom_line(colour = "#2E7D32", linewidth = 1.35) +
   geom_point(colour = "#2E7D32", size = 2.5) +
   geom_point(
     data = saving_key,
-    aes(colour = Point_Type),
+    aes(x = Year, y = Value),
+    colour = highlight_colour,
     size = 3.8
   ) +
   geom_segment(
@@ -992,58 +1012,57 @@ p_saving <- ggplot(saving_df, aes(x = Year, y = Value)) +
   ) +
   geom_label(
     data = saving_key,
-    aes(
-      x = Label_X,
-      y = Label_Y,
-      label = Label
-    ),
+    aes(x = Label_X, y = Label_Y, label = Label),
     inherit.aes = FALSE,
     fill = "white",
     colour = main_colour,
-    size = 2.8,
+    size = 3.0,
     fontface = "bold",
     label.padding = unit(0.22, "lines"),
     label.r = unit(0.12, "lines"),
     linewidth = 0.25
   ) +
-  scale_colour_manual(
-    values = c(
-      "Start" = main_colour,
-      "Latest" = main_colour,
-      "Lowest" = highlight_colour,
-      "Highest" = "#1F77B4",
-      "Global Financial Crisis" = highlight_colour,
-      "COVID-19 Shock" = highlight_colour,
-      "Recovery" = "#2CA02C"
-    )
+  annotate(
+    "label",
+    x = 2016.5,
+    y = max(saving_df$Value, na.rm = TRUE) * 0.88,
+    label = paste0(
+      "Change\n",
+      ifelse(saving_change >= 0, "+", ""),
+      sprintf("%.2f%%", saving_change)
+    ),
+    fill = "white",
+    colour = "#2E7D32",
+    fontface = "bold",
+    size = 3.1,
+    linewidth = 0.25
   ) +
   scale_x_continuous(breaks = seq(2000, 2024, by = 4)) +
   scale_y_continuous(labels = function(x) paste0(x, "%")) +
   labs(
     title = "Gross Domestic Savings",
-    subtitle = paste0(
-      "Overall change (2000–2024): ",
-      ifelse(saving_change >= 0, "+", ""),
-      sprintf("%.1f%%", saving_change)
-    ),
+    subtitle = "Savings as percentage of GDP",
     x = NULL,
     y = "% of GDP"
   ) +
   theme_corporate() +
   theme(
     legend.position = "none",
-    plot.title = element_text(size = 15, face = "bold", colour = main_colour),
+    plot.title = element_text(size = 15, face = "bold", colour = "#2E7D32"),
     plot.subtitle = element_text(size = 10, colour = "grey20")
   )
 
 # ------------------------------------------------------------
-# 12.7 Combine Charts into Executive Panel
+# 12.6 Combine Charts into Executive Panel
 # ------------------------------------------------------------
 
 p_household <- (p_consumption | p_saving) +
   plot_annotation(
     title = "Malaysia Household Financial Behaviour (2000–2024)",
-    subtitle = "Rising household income supported higher consumption, while savings fluctuated in response to economic cycles.",
+    subtitle = paste0(
+      "Household spending increased over time, while savings fluctuated across economic cycles.  ",
+      comparison_text
+    ),
     caption = "Source: World Bank Open Data | Indicators: Household Consumption per Capita (constant 2015 US$) and Gross Domestic Savings (% of GDP)",
     theme = theme(
       plot.title = element_text(
@@ -1053,7 +1072,7 @@ p_household <- (p_consumption | p_saving) +
         hjust = 0.5
       ),
       plot.subtitle = element_text(
-        size = 12,
+        size = 11,
         colour = "grey20",
         hjust = 0.5
       ),
@@ -1075,18 +1094,19 @@ ggsave(
 )
 
 # ============================================================
-# 13. Malaysia Cost of Borrowing and Return on Savings
+# 13. Malaysia Borrowing and Saving Environment
 # ============================================================
 
 # Business Question:
-# How have borrowing costs and savings returns changed between 2000 and 2024?
+# Did Malaysia's financial environment encourage borrowing while
+# maintaining reasonable returns for savers?
 
 # Analytical Purpose:
 # To compare lending and deposit rates and evaluate changes
-# in household financing conditions.
+# in household and business financing conditions.
 
 # Output:
-# Frame 08 – Malaysia Cost of Borrowing and Return on Savings
+# Frame 08 – Malaysia Borrowing and Saving Environment
 
 library(plotly)
 library(htmlwidgets)
@@ -1097,23 +1117,18 @@ interest_df <- dashboard_df %>%
 
 interest_wide <- interest_df %>%
   select(Year, Indicator, Value) %>%
-  pivot_wider(names_from = Indicator, values_from = Value) %>%
-  mutate(Spread = `Lending Rate` - `Deposit Rate`)
-
-average_spread <- mean(interest_wide$Spread, na.rm = TRUE)
+  pivot_wider(names_from = Indicator, values_from = Value)
 
 get_interest_points <- function(data, indicator_name) {
   
-  temp <- data %>% filter(Indicator == indicator_name)
+  temp <- data %>%
+    filter(Indicator == indicator_name)
   
   bind_rows(
-    temp %>% filter(Year == min(Year)) %>% mutate(Point_Type = "Start"),
+    temp %>% filter(Year == min(Year)) %>% mutate(Point_Type = "Initial"),
     temp %>% filter(Year == max(Year)) %>% mutate(Point_Type = "Latest"),
     temp %>% filter(Value == max(Value)) %>% slice(1) %>% mutate(Point_Type = "Highest"),
-    temp %>% filter(Value == min(Value)) %>% slice(1) %>% mutate(Point_Type = "Lowest"),
-    temp %>% filter(Year == 2008) %>% mutate(Point_Type = "Global Financial Crisis"),
-    temp %>% filter(Year == 2020) %>% mutate(Point_Type = "COVID-19 Shock"),
-    temp %>% filter(Year == 2021) %>% mutate(Point_Type = "Recovery")
+    temp %>% filter(Value == min(Value)) %>% slice(1) %>% mutate(Point_Type = "Lowest")
   ) %>%
     distinct(Indicator, Year, .keep_all = TRUE)
 }
@@ -1133,54 +1148,67 @@ interest_key <- bind_rows(
       sprintf("%.2f%%", Value)
     ),
     Label_X = case_when(
-      Year == 2000 ~ Year + 1.4,
-      Year == 2024 ~ Year - 1.6,
+      Indicator == "Lending Rate" & Point_Type == "Initial" ~ Year + 1.4,
+      Indicator == "Lending Rate" & Point_Type == "Latest" ~ Year - 1.5,
+      Indicator == "Lending Rate" & Point_Type == "Highest" ~ Year + 1.2,
+      Indicator == "Lending Rate" & Point_Type == "Lowest" ~ Year - 1.5,
+      
+      Indicator == "Deposit Rate" & Point_Type == "Initial" ~ Year + 1.4,
+      Indicator == "Deposit Rate" & Point_Type == "Latest" ~ Year - 1.5,
+      Indicator == "Deposit Rate" & Point_Type == "Highest" ~ Year + 1.2,
+      Indicator == "Deposit Rate" & Point_Type == "Lowest" ~ Year - 1.5,
+      
       TRUE ~ Year
     ),
     Label_Y = case_when(
-      Indicator == "Lending Rate" & Year == 2000 ~ Value + 0.70,
-      Indicator == "Lending Rate" & Year == 2008 ~ Value + 0.70,
-      Indicator == "Lending Rate" & Year == 2020 ~ Value - 0.75,
-      Indicator == "Lending Rate" & Year == 2021 ~ Value + 0.70,
-      Indicator == "Lending Rate" & Year == 2024 ~ Value + 0.70,
-      Indicator == "Lending Rate" ~ Value + 0.60,
+      Indicator == "Lending Rate" & Point_Type == "Initial" ~ Value + 0.75,
+      Indicator == "Lending Rate" & Point_Type == "Latest" ~ Value + 0.75,
+      Indicator == "Lending Rate" & Point_Type == "Highest" ~ Value + 0.75,
+      Indicator == "Lending Rate" & Point_Type == "Lowest" ~ Value - 0.75,
       
-      Indicator == "Deposit Rate" & Year == 2000 ~ Value + 0.55,
-      Indicator == "Deposit Rate" & Year == 2008 ~ Value - 0.65,
-      Indicator == "Deposit Rate" & Year == 2020 ~ Value - 0.70,
-      Indicator == "Deposit Rate" & Year == 2021 ~ Value + 0.55,
-      Indicator == "Deposit Rate" & Year == 2024 ~ Value - 0.65,
-      Indicator == "Deposit Rate" ~ Value - 0.55
+      Indicator == "Deposit Rate" & Point_Type == "Initial" ~ Value - 0.70,
+      Indicator == "Deposit Rate" & Point_Type == "Latest" ~ Value - 0.70,
+      Indicator == "Deposit Rate" & Point_Type == "Highest" ~ Value + 0.70,
+      Indicator == "Deposit Rate" & Point_Type == "Lowest" ~ Value - 0.70,
+      
+      TRUE ~ Value
     )
   )
 
+latest_interest <- interest_df %>%
+  group_by(Indicator) %>%
+  filter(Year == max(Year)) %>%
+  ungroup()
+
+latest_label <- paste0(
+  "Latest Position\n",
+  "Lending Rate: ",
+  sprintf("%.2f%%", latest_interest$Value[latest_interest$Indicator == "Lending Rate"]),
+  "\nDeposit Rate: ",
+  sprintf("%.2f%%", latest_interest$Value[latest_interest$Indicator == "Deposit Rate"])
+)
+
 p_interest_static <- ggplot() +
-  geom_ribbon(
-    data = interest_wide,
-    aes(
-      x = Year,
-      ymin = `Deposit Rate`,
-      ymax = `Lending Rate`
-    ),
-    fill = "#EAF2FB",
-    alpha = 0.55
-  ) +
+  
   geom_line(
     data = interest_df,
     aes(x = Year, y = Value, colour = Indicator),
-    linewidth = 1.3
+    linewidth = 1.35
   ) +
+  
   geom_point(
     data = interest_df,
     aes(x = Year, y = Value, colour = Indicator),
-    size = 2.5
+    size = 2.6
   ) +
+  
   geom_point(
     data = interest_key,
     aes(x = Year, y = Value),
     colour = highlight_colour,
-    size = 3.6
+    size = 3.8
   ) +
+  
   geom_segment(
     data = interest_key,
     aes(
@@ -1189,58 +1217,65 @@ p_interest_static <- ggplot() +
       y = Value,
       yend = Label_Y
     ),
+    inherit.aes = FALSE,
     colour = "grey55",
     linetype = "dashed",
     linewidth = 0.4
   ) +
+  
   geom_label(
     data = interest_key,
     aes(x = Label_X, y = Label_Y, label = Label),
+    inherit.aes = FALSE,
     fill = "white",
     colour = main_colour,
-    size = 2.7,
+    size = 2.75,
     fontface = "bold",
     label.padding = unit(0.20, "lines"),
     label.r = unit(0.12, "lines"),
     linewidth = 0.25
   ) +
+  
   annotate(
     "label",
     x = 2018.5,
     y = max(interest_df$Value, na.rm = TRUE) + 0.9,
-    label = paste0(
-      "Average Interest Spread\n2000–2024: ",
-      sprintf("%.2f%%", average_spread)
-    ),
+    label = latest_label,
     fill = "white",
     colour = main_colour,
     fontface = "bold",
-    size = 3.4,
+    size = 3.25,
     linewidth = 0.3
   ) +
+  
   scale_colour_manual(
     values = c(
       "Lending Rate" = main_colour,
       "Deposit Rate" = "#1F77B4"
     )
   ) +
+  
   scale_x_continuous(breaks = seq(2000, 2024, by = 4)) +
   scale_y_continuous(labels = function(x) paste0(x, "%")) +
+  
   labs(
-    title = "Malaysia Cost of Borrowing and Return on Savings",
-    subtitle = "Lending and deposit interest rates, 2000–2024",
+    title = "Malaysia Borrowing and Saving Environment",
+    subtitle = "Lending rate and deposit rate, 2000–2024",
     x = "Year",
     y = "Interest Rate (%)",
     colour = "",
-    caption = "Source: World Bank Open Data | Note: Shaded area represents the lending-deposit interest spread."
+    caption = "Source: World Bank Open Data | Note: Lending rate represents borrowing cost, while deposit rate represents return to savers."
   ) +
+  
   theme_corporate() +
-  theme(legend.position = "top")
+  theme(
+    legend.position = "top"
+  )
 
 p_interest_static
 
 ggsave(
-  "visuals/storyboard/frame_08_cost_of_borrowing_and_savings_2000_2024.png",
+  "visuals/storyboard/frame_08_borrowing_and_saving_environment_2000_2024.png",
   p_interest_static,
   width = 12,
   height = 7,
@@ -1268,18 +1303,9 @@ p_interest_interactive <- plot_ly() %>%
     line = list(color = "#1F77B4", width = 3),
     hovertemplate = "Year: %{x}<br>Deposit Rate: %{y:.2f}%<extra></extra>"
   ) %>%
-  add_markers(
-    data = interest_wide,
-    x = ~Year,
-    y = ~`Lending Rate`,
-    customdata = ~Spread,
-    name = "Interest Spread",
-    marker = list(size = 6, color = "#D62728"),
-    hovertemplate = "Year: %{x}<br>Spread: %{customdata:.2f}%<extra></extra>"
-  ) %>%
   layout(
     title = list(
-      text = "<b>Malaysia Cost of Borrowing and Return on Savings</b><br><sup>Lending rate, deposit rate and interest spread, 2000–2024</sup>",
+      text = "<b>Malaysia Borrowing and Saving Environment</b><br><sup>Lending rate and deposit rate, 2000–2024</sup>",
       x = 0.02,
       xanchor = "left"
     ),
@@ -1296,7 +1322,7 @@ p_interest_interactive
 
 htmlwidgets::saveWidget(
   p_interest_interactive,
-  "visuals/interactive/frame_08_cost_of_borrowing_and_savings_2000_2024.html",
+  "visuals/interactive/frame_08_borrowing_and_saving_environment_2000_2024.html",
   selfcontained = FALSE
 )
 
@@ -1317,9 +1343,6 @@ htmlwidgets::saveWidget(
 credit_df <- dashboard_df %>%
   filter(Indicator == "Domestic Credit") %>%
   arrange(Year)
-
-# Use percentage-point change because this indicator is already expressed as % of GDP
-credit_change_pp <- last(credit_df$Value) - first(credit_df$Value)
 
 credit_key <- bind_rows(
   credit_df %>% filter(Year == min(Year)) %>% mutate(Point_Type = "Initial Level"),
@@ -1403,17 +1426,13 @@ p_credit <- ggplot(credit_df, aes(x = Year, y = Value)) +
   ) +
   annotate(
     "label",
-    x = 2015.2,
+    x = 2014.5,
     y = max(credit_df$Value, na.rm = TRUE) + 11,
-    label = paste0(
-      "Overall Change\n2000–2024: ",
-      ifelse(credit_change_pp >= 0, "+", ""),
-      sprintf("%.2f%%", credit_change_pp)
-    ),
+    label = "Interpretation\nCredit level is measured\nrelative to GDP",
     fill = "white",
     colour = main_colour,
     fontface = "bold",
-    size = 3.4,
+    size = 3.2,
     linewidth = 0.3
   ) +
   scale_x_continuous(breaks = seq(2000, 2024, by = 4)) +
@@ -1425,11 +1444,11 @@ p_credit <- ggplot(credit_df, aes(x = Year, y = Value)) +
     labels = function(x) paste0(x, "%")
   ) +
   labs(
-    title = "Malaysia Domestic Credit to Private Sector",
-    subtitle = "Domestic credit provided by banks as percentage of GDP, 2000–2024",
+    title = "Malaysia Domestic Credit Performance",
+    subtitle = "Domestic credit to private sector by banks as percentage of GDP, 2000–2024",
     x = "Year",
     y = "Domestic Credit (% of GDP)",
-    caption = "Source: World Bank Open Data | Note: Indicator measures domestic credit to private sector by banks as percentage of GDP."
+    caption = "Source: World Bank Open Data | Note: A value above 100% means bank credit to the private sector exceeds the size of annual GDP."
   ) +
   theme_corporate() +
   theme(legend.position = "none")
@@ -2068,29 +2087,64 @@ dashboard_card_df <- dashboard_df %>%
 
 assessment_rules <- tibble(
   Indicator = c(
-    "GDP Growth", "Inflation", "Unemployment", "Income per Capita",
-    "Household Consumption", "Gross Domestic Savings",
-    "Lending Rate", "Deposit Rate", "Domestic Credit", "Non-performing Loans"
+    "GDP Growth",
+    "Inflation",
+    "Unemployment",
+    "Income per Capita",
+    "Household Consumption",
+    "Gross Domestic Savings",
+    "Lending Rate",
+    "Deposit Rate",
+    "Domestic Credit",
+    "Non-performing Loans"
   ),
   Desired_Direction = c(
-    "Higher", "Lower", "Lower", "Higher",
-    "Higher", "Higher",
-    "Lower", "Higher", "Higher", "Lower"
+    "Higher",
+    "Lower",
+    "Lower",
+    "Higher",
+    "Higher",
+    "Higher",
+    "Lower",
+    "Higher",
+    "Higher",
+    "Lower"
   ),
   Theme_Group = c(
-    "Economic Well-being", "Economic Well-being", "Economic Well-being", "Economic Well-being",
-    "Household Financial Behaviour", "Household Financial Behaviour",
-    "Financial System Support", "Financial System Support", "Financial System Support", "Financial System Support"
+    "Economic Performance",
+    "Economic Performance",
+    "Economic Performance",
+    "Household Behaviour",
+    "Household Behaviour",
+    "Household Behaviour",
+    "Financial System",
+    "Financial System",
+    "Financial System",
+    "Financial System"
   ),
   Theme_Colour = c(
-    "#0B2545", "#0B2545", "#0B2545", "#0B2545",
-    "#2E7D32", "#2E7D32",
-    "#B36B00", "#B36B00", "#B36B00", "#B36B00"
+    "#0B2545",
+    "#0B2545",
+    "#0B2545",
+    "#2E7D32",
+    "#2E7D32",
+    "#2E7D32",
+    "#B36B00",
+    "#B36B00",
+    "#B36B00",
+    "#B36B00"
   ),
   Theme_Fill = c(
-    "#EAF2FB", "#EAF2FB", "#EAF2FB", "#EAF2FB",
-    "#EAF7EA", "#EAF7EA",
-    "#FFF4E6", "#FFF4E6", "#FFF4E6", "#FFF4E6"
+    "#EAF2FB",
+    "#EAF2FB",
+    "#EAF2FB",
+    "#EAF7EA",
+    "#EAF7EA",
+    "#EAF7EA",
+    "#FFF4E6",
+    "#FFF4E6",
+    "#FFF4E6",
+    "#FFF4E6"
   )
 )
 
@@ -2150,16 +2204,11 @@ create_executive_card <- function(indicator_name) {
   y_max <- max(card_data$Value, na.rm = TRUE)
   y_range <- y_max - y_min
   
-  if (y_range == 0) y_range <- 1
+  if (y_range == 0) {
+    y_range <- 1
+  }
   
   ggplot(card_data, aes(x = Year, y = Value)) +
-    annotate(
-      "rect",
-      xmin = -Inf, xmax = Inf,
-      ymin = -Inf, ymax = Inf,
-      fill = summary_data$Theme_Fill,
-      alpha = 0.85
-    ) +
     geom_ribbon(
       aes(
         ymin = y_min - (0.05 * y_range),
@@ -2213,22 +2262,33 @@ create_executive_card <- function(indicator_name) {
     annotate(
       "label",
       x = min(card_data$Year),
-      y = y_max + (0.12 * y_range),
+      y = y_min - (0.23 * y_range),
       label = summary_data$Period_Label,
       hjust = 0,
-      vjust = 1,
+      vjust = 0,
       fill = "white",
-      colour = "grey20",
-      size = 2.55,
-      linewidth = 0.15
+      colour = "grey25",
+      size = 2.45,
+      linewidth = 0
     ) +
-    coord_cartesian(
-      ylim = c(y_min - (0.12 * y_range), y_max + (0.50 * y_range))
+    scale_x_continuous(
+      limits = c(min(card_data$Year), max(card_data$Year)),
+      breaks = c(min(card_data$Year), max(card_data$Year))
+    ) +
+    scale_y_continuous(
+      limits = c(
+        y_min - (0.30 * y_range),
+        y_max + (0.42 * y_range)
+      )
+    ) +
+    labs(
+      x = NULL,
+      y = NULL
     ) +
     theme_void() +
     theme(
       plot.background = element_rect(
-        fill = "white",
+        fill = summary_data$Theme_Fill,
         colour = "grey75",
         linewidth = 0.6
       ),
@@ -2236,10 +2296,14 @@ create_executive_card <- function(indicator_name) {
     )
 }
 
+# ------------------------------------------------------------
+# Create cards in the exact presentation order
+# ------------------------------------------------------------
+
 p_card_gdp <- create_executive_card("GDP Growth")
 p_card_inflation <- create_executive_card("Inflation")
-p_card_income <- create_executive_card("Income per Capita")
 p_card_unemployment <- create_executive_card("Unemployment")
+p_card_income <- create_executive_card("Income per Capita")
 p_card_consumption <- create_executive_card("Household Consumption")
 
 p_card_savings <- create_executive_card("Gross Domestic Savings")
@@ -2261,11 +2325,11 @@ snapshot_text <- paste0(
   "Overall assessment: ",
   favourable_count, " favourable indicators, ",
   less_favourable_count, " less favourable indicators.\n\n",
-  "• Household income and consumption show strong long-term improvement.\n",
+  "• Economic performance remained resilient across major shocks.\n",
+  "• Household income and consumption improved over the long term.\n",
+  "• Savings behaviour requires continued monitoring.\n",
   "• Banking stability strengthened as non-performing loans declined.\n",
-  "• Inflation and unemployment remain important monitoring areas.\n",
-  "• Gross domestic savings declined as consumption expanded.\n",
-  "• Lending conditions require continued monitoring."
+  "• Financing conditions supported private sector activity."
 )
 
 p_executive_snapshot <- ggplot() +
@@ -2298,7 +2362,7 @@ p_executive_snapshot <- ggplot() +
     y = 0.90,
     label = paste0(
       "Colour Guide\n\n",
-      "Blue: Economic well-being\n",
+      "Blue: Economic performance\n",
       "Green: Household behaviour\n",
       "Brown: Financial system"
     ),
@@ -2319,8 +2383,12 @@ p_executive_snapshot <- ggplot() +
     plot.margin = margin(7, 7, 7, 7)
   )
 
+# ------------------------------------------------------------
+# Arrange dashboard cards in final agreed order
+# ------------------------------------------------------------
+
 kpi_cards <- (
-  p_card_gdp | p_card_inflation | p_card_income | p_card_unemployment | p_card_consumption
+  p_card_gdp | p_card_inflation | p_card_unemployment | p_card_income | p_card_consumption
 ) /
   (
     p_card_savings | p_card_lending | p_card_deposit | p_card_credit | p_card_npl
